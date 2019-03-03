@@ -15,7 +15,7 @@ interface MessageFeedState {
 
 export const MessageFeed: React.FC<MessageFeedProps> = props => {
   const [state, useState] = React.useState<MessageFeedState>({ messages: [] })
-  const preProps = usePrevious(props)
+  const preProps = usePrevious<MessageFeedProps>(props)
   let cancelTokenSource = null
   const handleMessages = async (channelName: string) => {
     try {
