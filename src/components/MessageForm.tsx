@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { postMessage, Message } from '../client'
-import { MessageContext, PartialMessageContextObject } from '../context'
+import { MessageContext, MessageContextObject } from '../context'
 import { Button, Form, Segment, TextArea } from 'semantic-ui-react'
 
 interface MessageFormProps {
@@ -12,22 +12,20 @@ interface MessageFormState {
 }
 
 export const MessageForm: React.FC<MessageFormProps> = props => {
-  const [state, useState] = React.useState<MessageFormState>({
+  const [state, setState] = React.useState<MessageFormState>({
     body: ''
   })
-  const messageContext = React.useContext<PartialMessageContextObject>(
-    MessageContext
-  )
+  const messageContext = React.useContext<MessageContextObject>(MessageContext)
   const onChange = (e: React.FormEvent<HTMLTextAreaElement>) => {
     e.preventDefault()
-    useState({ body: e.currentTarget.value })
+    setState({ body: e.currentTarget.value })
   }
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const payload: Message = { body: state.body }
     try {
       await postMessage(props.channelName, payload)
-      useState({ body: '' })
+      setState({ body: '' })
       messageContext.setShouldReload(true)
     } catch (err) {
       console.log(err)

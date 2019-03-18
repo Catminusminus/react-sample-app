@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { fetchMessages, Message } from '../client'
 import { usePrevious } from '../hooks'
-import { MessageContext, PartialMessageContextObject } from '../context'
+import { MessageContext, MessageContextObject } from '../context'
 import { Comment, Header } from 'semantic-ui-react'
 import Axios from 'axios'
 
@@ -14,26 +14,24 @@ interface MessageFeedState {
 }
 
 export const MessageFeed: React.FC<MessageFeedProps> = props => {
-  const [state, useState] = React.useState<MessageFeedState>({ messages: [] })
+  const [state, setState] = React.useState<MessageFeedState>({ messages: [] })
   const preProps = usePrevious<MessageFeedProps>(props)
-  let cancelTokenSource = null
-  const handleMessages = async (channelName: string) => {
-    try {
-      cancelTokenSource = Axios.CancelToken.source()
-      const response = await fetchMessages(
-        channelName,
-        {},
-        cancelTokenSource.token
-      )
-      useState({ messages: response.data.messages })
-    } catch (err) {
-      console.log(err)
-    }
-  }
-  const messageContext = React.useContext<PartialMessageContextObject>(
-    MessageContext
-  )
+  const cancelTokenSource = React.useRef(null)
+  const messageContext = React.useContext<MessageContextObject>(MessageContext)
   React.useEffect(() => {
+    const handleMessages = async (channelName: string) => {
+      try {
+        cancelTokenSource.current = Axios.CancelToken.source()
+        const response = await fetchMessages(
+          channelName,
+          {},
+          cancelTokenSource.current.token
+        )
+        setState({ messages: response.data.messages })
+      } catch (err) {
+        console.log(err)
+      }
+    }
     if (
       !preProps ||
       preProps.channelName !== props.channelName ||
@@ -44,14 +42,14 @@ export const MessageFeed: React.FC<MessageFeedProps> = props => {
       }
       handleMessages(props.channelName)
     }
-  }, [messageContext, props])
+  }, [messageContext, preProps, props])
   React.useEffect(
     () => () => {
-      if (cancelTokenSource) {
-        cancelTokenSource.cancel('This component has been unmounted')
+      if (cancelTokenSource.current) {
+        cancelTokenSource.current.cancel('This component has been unmounted')
       }
     },
-    []
+    [cancelTokenSource]
   )
   return (
     <Comment.Group>
