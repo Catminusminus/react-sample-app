@@ -35,18 +35,3 @@ const usePrevious = <T>(value: T) => ...
 const usePrevious = <T extends {}>(value: T) => ...
 ```
 とした。
-### createContext & useContext & useState
-ContextとしてuseStateの戻り値、特に
-```
-const [value, useValue] = useState(...)
-```
-のときのuseValueを渡したいが、createContext時の初期値をどうすればよいのか当初分からなかった。typescriptの場合型定義から
-```
-// no default value
-const context = createContext()
-```
-とすることができず、何かを渡す必要がある。しかしuseValueと同じ型の適当な関数を持ってくるのが困難。そこでPartial型を使った。もちろんuseValueを
-```
-() => {useValue(...)}
-```
-にしてcreateContext時`(value: bool) => {console.log(value)}`あたりを渡す手もあるが、それよりはPartial型を使うほうがマシなのでは？と思った。
